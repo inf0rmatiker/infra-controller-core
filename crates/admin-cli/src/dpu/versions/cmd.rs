@@ -18,7 +18,7 @@
 use std::collections::HashMap;
 
 use ::rpc::Machine;
-use ::rpc::admin_cli::{CarbideCliError, CarbideCliResult, OutputFormat};
+use ::rpc::admin_cli::{CarbideCliResult, OutputFormat};
 use carbide_uuid::machine::MachineId;
 use prettytable::{Row, Table};
 use serde::Serialize;

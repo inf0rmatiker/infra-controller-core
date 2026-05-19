@@ -16,7 +16,7 @@
  */
 
 use ::rpc::Machine;
-use ::rpc::admin_cli::{CarbideCliError, CarbideCliResult, OutputFormat};
+use ::rpc::admin_cli::{CarbideCliResult, OutputFormat};
 use ::rpc::forge::BuildInfo;
 use carbide_uuid::machine::MachineId;
 use prettytable::{Row, Table};

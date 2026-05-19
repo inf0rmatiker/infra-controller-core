@@ -31,6 +31,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use carbide_uuid::dpu_remediations::RemediationId;
 use carbide_uuid::instance::InstanceId;
 use carbide_uuid::machine::{MachineId, MachineIdParseError};
+use carbide_uuid::switch::{SwitchId, SwitchIdParseError};
 pub use output::{Destination, OutputFormat};
 use serde::Serialize;
 #[cfg(feature = "sqlx")]
@@ -130,11 +131,14 @@ pub enum CarbideCliError {
     #[error("Error while handling csv: {0}")]
     CsvError(#[from] csv::Error),
 
-    #[error("Unexpected machine type.  expected {0:?} but found {1:?}")]
+    #[error("Unexpected machine type. Expected {0:?} but found {1:?}")]
     UnexpectedMachineType(MachineType, MachineType),
 
-    #[error("Host machine with id {0} not found")]
+    #[error("Machine with id {0} not found")]
     MachineNotFound(MachineId),
+
+    #[error("Switch with id {0} not found")]
+    SwitchNotFound(SwitchId),
 
     #[error("Remediation with id {0} not found")]
     RemediationNotFound(RemediationId),
@@ -156,8 +160,11 @@ pub enum CarbideCliError {
     #[error("Not Implemented {0}")]
     NotImplemented(String),
 
-    #[error("Invalid Machine ID: {0}")]
+    #[error("Invalid Machine id: {0}")]
     InvalidMachineId(#[from] MachineIdParseError),
+
+    #[error("Invalid Switch id: {0}")]
+    InvalidSwitchId(#[from] SwitchIdParseError),
 
     #[error("RPC data conversion error: {0}")]
     RpcDataConversionError(#[from] errors::RpcDataConversionError),
@@ -224,6 +231,7 @@ pub fn cli_output<T: Serialize + ToTable>(
 }
 
 pub mod output {
+    use std::fmt;
     use std::fs::File;
     use std::io::{Write, stdout};
 
@@ -231,6 +239,8 @@ pub mod output {
     use serde::Serialize;
     pub use table::IntoTable;
     use table::{render_ascii_table, render_csv_table};
+
+    use crate::admin_cli::CarbideCliError;
 
     /// Destination is an enum used to determine whether CLI output is going
     /// to a file path or stdout.
@@ -247,6 +257,23 @@ pub mod output {
         Csv,
         Json,
         Yaml,
+    }
+
+    impl OutputFormat {
+        pub fn unimplemented_output_format_err(&self) -> CarbideCliError {
+            CarbideCliError::NotImplemented(self.to_string())
+        }
+    }
+
+    impl fmt::Display for OutputFormat {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            match self {
+                OutputFormat::AsciiTable => write!(f, "ASCII table output format"),
+                OutputFormat::Csv => write!(f, "CSV output format"),
+                OutputFormat::Json => write!(f, "JSON output format"),
+                OutputFormat::Yaml => write!(f, "YAML output format"),
+            }
+        }
     }
 
     /// The FormattedOutput trait allows you to handle CLI output for a data

@@ -351,9 +351,7 @@ async fn show_all_machines(
             async_write_table_as_csv!(output_file, table)?;
         }
         OutputFormat::Yaml => {
-            return Err(CarbideCliError::NotImplemented(
-                "YAML formatted output".to_string(),
-            ));
+            return Err(output_format.unimplemented_output_format_err());
         }
     }
     Ok(())
